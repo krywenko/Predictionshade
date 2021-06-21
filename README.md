@@ -12,7 +12,9 @@ the clump of trees from 10am to 11 am it covers a maximum of 50% of my panel whe
 
 example  of an array 
 UPPER=(0 0 0 0 0 0 0 0 10 10 10 10 10 10 10 10 10 10 0 0 22 22 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)    ### 1/2 hr blocks  3,2,1 depicts noon location
+
 LOWER=(0 0 0 0 0 0 0 0 7 7 7 7 7 7 7 7 7 7 0 0 11 11 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+
 PERCENT=(0 0 0 0 0 0 0 100 100 100 100 100 100 100 100 100 100 100 0 0 50 50 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 
 there a  a script called alt. simply run that when the shadow is at it maxuim and minimum on yoyor pane and enter that into the array
