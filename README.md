@@ -17,4 +17,4 @@ LOWER=(0 0 0 0 0 0 0 0 7 7 7 7 7 7 7 7 7 7 0 0 11 11 0 0 2 0 0 0 0 0 0 0 0 0 0 0
 
 PERCENT=(0 0 0 0 0 0 0 100 100 100 100 100 100 100 100 100 100 100 0 0 50 50 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 
-there a  a script called alt. simply run that when the shadow is at it maxuim and minimum on yoyor pane and enter that into the array
+there a  a script called alt. simply run that when the shadow is at it maxuim and minimum on your panel and enter that into the array
