@@ -1,6 +1,6 @@
 # Predictionshade
 
-same configuration as the  prediction but  added bit for shading of solar  panel.
+same configuration as the other prediction software but  added bit for shading of solar  panel.
 in panelconf  there are 3 shading arrarys.
 
 here an test example from my yard 
