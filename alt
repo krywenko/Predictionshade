@@ -1,0 +1,7 @@
+#!/bin/bash
+LAT=51.4298255        #your latitude
+LON=-97.4662374 
+
+TIME=$(date +%s)
+altitude=$(python3 -W ignore altitude.py -lon $LON -lat $LAT -t $TIME)
+echo $altitude

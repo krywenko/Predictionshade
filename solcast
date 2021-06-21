@@ -1,0 +1,88 @@
+#!/bin/bash
+
+API= #solcast api key
+RES=
+
+ENABLE=0
+
+MQTT=192.168.168.251
+c=0
+
+
+if [ $ENABLE -eq 0 ]
+then 
+JSON=$( cat /dev/shm/JSON-SC)
+
+else
+JSON=$(lynx -dump "https://api.solcast.com.au/rooftop_sites/$RES/forecasts?format=json&api_key=$API"  )
+echo $JSON | jq > /dev/shm/JSON-SC
+fi 
+
+
+echo $JSON |jq '.forecasts[] |  "\(.period_end),\(.pv_estimate),\(.pv_estimate10),\(.pv_estimate90)"' | tr -d '"' > /dev/shm/solcast
+
+
+ 
+
+
+while IFS=, read -r Time EST  EST10 EST90
+do
+Time=$(date +%s  -d $Time)
+echo $Time,$EST,$EST10,$EST90
+
+
+##### mqtt send to database ##################
+   mosquitto_pub -h $MQTT -t 'incoming/test/mqtt-Energy/power-SolCast' -m "$Time:$EST"
+   sleep 0.1
+    mosquitto_pub -h $MQTT -t 'incoming/test/mqtt-Energy/power-SolCast_10' -m "$Time:$EST10"
+    sleep 0.1
+     mosquitto_pub -h $MQTT -t 'incoming/test/mqtt-Energy/power-SolCast_90' -m "$Time:$EST90"
+     sleep 0.1
+     
+  
+    
+done < /dev/shm/solcast
+
+head -48 /dev/shm/solcast | awk -F "," ' $2 != "0" {print $2, $3, $4}'  | awk  '$2!="" {print}' | tr " "  "," > /dev/shm/AVG_solcast
+
+cnt=0
+
+avgPob=0
+avgPos=0
+avgMea=0
+
+while IFS=, read -r  Mea Pob Pos
+do
+
+if [ -z "$Mea" ]; then Mea=0;  fi
+if [ -z "$Pob" ]; then Pob=0;  fi
+if [ -z "$Pos" ]; then Pos=0;  fi
+ 
+
+
+avgMea=$( echo "scale=4;($avgMea + $Mea)" | bc -l)
+
+avgPob=$( echo "scale=4;($avgPob + $Pob)" | bc -l)
+
+avgPos=$( echo "scale=4;($avgPos + $Pos)" | bc -l)
+
+cnt=$(echo $cnt+1 |bc)
+
+
+done < /dev/shm/AVG_solcast
+
+
+avgMea=$( echo "scale=4;($avgMea /2)" | bc -l)
+avgPob=$( echo "scale=4;($avgPob /2)" | bc -l)
+avgPos=$( echo "scale=4;($avgPos / 2)" | bc -l)
+avghr=$( echo "scale=4;($avgMea /$cnt)" | bc -l)
+
+
+echo Daily EST    = $avgMea  > /dev/shm/AVG_solcast
+echo Daily EST 10 = $avgPob  >> /dev/shm/AVG_solcast
+
+echo Daily EST 90 = $avgPos >> /dev/shm/AVG_solcast
+echo Hourly avg. =  $avghr  >> /dev/shm/AVG_solcast
+ mosquitto_pub -h $MQTT -t 'incoming/test/mqtt-Energy/power-SOLCAST_mea' -m "N:$avgMea"
+ mosquitto_pub -h $MQTT -t 'incoming/test/mqtt-Energy/power-SOLCAST_mea10' -m "N:$avgPob"
+  mosquitto_pub -h $MQTT -t 'incoming/test/mqtt-Energy/power-SOLCAST_mea90' -m "N:$avgPos"

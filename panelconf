@@ -1,0 +1,218 @@
+#!/bin/bash
+
+
+
+#####PANEL GROUPS#########
+
+G1A=-4        #closest to angle / 7.5degrees   -negative for east  positive for west facing -e 35degrees /7.5 = 4.666  so a setting of 5
+G1w=950 # panel wattage rated 
+
+
+G2A=1          #  panel facing due south or north depend what side of the equator 
+G2w=950
+
+
+G3A=5
+G3w=950
+
+##### HARDWARE and other configurations 
+
+albedo=7    #albedo effect % of panel output 
+inverter=.90  #inverter  average efficency
+
+
+LAT=51.4298255        #your latitude
+LON=-97.4662374 
+
+altitude=$(python3 -W ignore altitude.py -lon $LON -lat $LAT -t $2)
+#altitude=$( printf "%.0f" $altitude)
+#echo $altitude
+
+####SHADING####################
+SHADING1=1 #
+SHADING2=1 #
+SHADING3=1 #
+###group1#####
+UPPER=(0 0 0 0 0 0 0 0 10 10 10 10 10 10 10 10 10 10 0 0 22 22 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)    ### 1/2 hr blocks  3,2,1 depicts noon location
+LOWER=(0 0 0 0 0 0 0 0 7 7 7 7 7 7 7 7 7 7 0 0 11 11 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+PERCENT=(0 0 0 0 0 0 0 100 100 100 100 100 100 100 100 100 100 100 0 0 50 50 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+#####PROCESS######
+upper=$(echo ${UPPER[$1]}  )
+
+lower=$(echo ${LOWER[$1]}  )
+if (( $upper != 0 )); then
+percent=$(echo ${PERCENT[$1]}  )
+
+percent=$(echo "($percent) / 100"| bc -l)
+
+x=$(echo " $upper - $lower "| bc -l)
+
+y=$(echo "$upper - $altitude"| bc -l)
+
+FACTOR=$(echo "(($y/$x))"| bc -l)
+
+SHADING1=$(echo "(1-($FACTOR*$percent))"| bc -l)
+
+FACTOR=$(echo "scale=0; $FACTOR*100 /1" |bc)  # scaling  to remove decimal and float
+
+if ((  $FACTOR > 100 )); then SHADING1=$percent;  fi
+if ((  $FACTOR <= 0  )); then SHADING1=1;  fi
+fi
+#echo  shading1 $SHADING1
+
+###group2#####
+UPPER=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 25 25 25 25 0 0 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)    ### 1/2 hr blocks  3,2,1 depicts noon location
+LOWER=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 20 20 20 20 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+PERCENT=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 25 50 50 25 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+#####PROCESS######
+upper=$(echo ${UPPER[$1]}  )
+
+lower=$(echo ${LOWER[$1]}  )
+
+percent=$(echo ${PERCENT[$1]}  )
+if (( $upper != 0 )); then
+
+
+percent=$(echo "$percent / 100"| bc -l)
+
+x=$(echo " $upper - $lower "| bc -l)
+
+y=$(echo "$upper - $altitude"| bc -l)
+
+FACTOR=$(echo "(($y/$x))"| bc -l)
+
+SHADING2=$(echo "(1-($FACTOR*$percent))"| bc -l)
+
+FACTOR=$(echo "scale=0; $FACTOR*100 /1" |bc)  # scaling  to remove decimal and float
+
+if ((  $FACTOR > 100 )); then SHADING2=$percent;  fi
+if ((  $FACTOR <= 0  )); then SHADING2=1;  fi
+fi
+#echo  shading2 $SHADING2
+
+
+###group3#####
+UPPER=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)    ### 1/2 hr blocks  3,2,1 depicts noon location
+LOWER=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+PERCENT=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+#####PROCESS######
+upper=$(echo ${UPPER[$1]}  )
+
+lower=$(echo ${LOWER[$1]}  )
+
+percent=$(echo ${PERCENT[$1]}  )
+if (( $upper != 0 )); then
+
+percent=$(echo "(100-$percent) / 100"| bc -l)
+
+x=$(echo " $upper - $lower "| bc -l)
+
+y=$(echo "$upper - $altitude"| bc -l)
+
+FACTOR=$(echo "(($y/$x))"| bc -l)
+
+SHADING3=$(echo "(1-($FACTOR*$percent))"| bc -l)
+
+FACTOR=$(echo "scale=0; $FACTOR*100 /1" |bc)  # scaling  to remove decimal and float
+
+if ((  $FACTOR > 100 )); then SHADING3=$percent;  fi
+if ((  $FACTOR <= 0  )); then SHADING3=1;  fi
+fi
+#echo  shading3 $SHADING3
+
+
+
+#####################
+Group1=0 ############
+Group2=0 ############
+Group3=0 ############
+#####################
+DEGREE=(1 0.991444861374 0.965925826289 0.923879532511 0.866025403785 0.793353340291 0.707106781187 0.608761429009 0.5  0.382683432365 0.258819045102 0.13052619222 0 ) ### COS array
+
+N=$(echo "($1 -24)" | bc   )   
+ 
+#########GROUP ONE ########## 
+
+ N1a=$( echo $G1A-12 |bc)
+ N1b=$(echo $G1A +12 |bc)
+
+if (( $N >= $N1a  &&  $N <= N1b )) ; then
+ 
+ if (( $N  < $G1A )) ; then
+  degree=$(echo " 12-($G1A - $N)" |bc)
+  COS=$(echo ${DEGREE[$degree]}  )
+
+  Group1=$(echo "((sqrt(2- (2*$COS)))/1.414)* $G1w" | bc -l )
+  #echo $Group1
+  elif (( $N  > $G1A )) ; then
+
+  degree=$(echo " ($G1A - $N)" |bc)
+  
+  COS=$(echo ${DEGREE[$degree]}  )
+
+  Group1=$(echo "((sqrt(2- (2*$COS)))/1.414)* $G1w" | bc -l )
+   #echo $Group1
+   else
+   Group1=$G1w
+   #echo $Group1
+  fi
+fi
+#########GROUP TWO ########## 
+
+ N2a=$( echo $G2A-12 |bc)
+ N2b=$(echo $G2A +12 |bc)
+
+if (( $N >= $N2a  &&  $N <= N2b )) ; then
+ 
+ if (( $N  < $G2A )) ; then
+  degree=$(echo " 12-($G2A - $N)" |bc)
+  COS=$(echo ${DEGREE[$degree]}  )
+
+  Group2=$(echo "((sqrt(2- (2*$COS)))/1.414)* $G2w" | bc -l )
+  #echo $Group2
+  elif (( $N  > $G2A )) ; then
+
+  degree=$(echo " ($G2A - $N)" |bc)
+  #echo $degree  ssss
+  COS=$(echo ${DEGREE[$degree]}  )
+
+  Group2=$(echo "((sqrt(2- (2*$COS)))/1.414)* $G2w" | bc -l )
+   #echo $Group2
+   else
+   Group2=$G2w
+   #echo $Group2
+  fi
+fi
+
+#########GROUP THREE ########## 
+
+ N3a=$( echo $G3A-12 |bc)
+ N3b=$(echo $G3A +12 |bc)
+
+if (( $N >= $N3a  &&  $N <= N3b )) ; then
+ 
+ if (( $N  < $G3A )) ; then
+  degree=$(echo " 12-($G3A - $N)" |bc)
+  COS=$(echo ${DEGREE[$degree]}  )
+
+  Group3=$(echo "((sqrt(2- (2*$COS)))/1.414)* $G3w" | bc -l )
+  #echo $Group3
+  elif (( $N  > $G3A )) ; then
+
+  degree=$(echo " ($G3A - $N)" |bc)
+  #echo $degree  ssss
+  COS=$(echo ${DEGREE[$degree]}  )
+
+  Group3=$(echo "((sqrt(2- (2*$COS)))/1.414)* $G3w" | bc -l )
+  # echo $Group3
+   else
+   Group3=$G3w
+  # echo $Group3
+  fi
+fi
+##################################
+
+TOTAL=$( echo "((($Group3*$SHADING3)+($G3w * $albedo/100)) + (($Group2*$SHADING2)+($G2w * $albedo/100)) + (($Group1*$SHADING1)+($G1w * $albedo/100))) * $inverter" | bc -l)
+
+printf "%0.1f\n" $TOTAL
+
